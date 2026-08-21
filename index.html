@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OOT Circle - 1st Anniversary</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <!-- Confetti JS -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <style>
+    :root {
+      --bg-dark: linear-gradient(135deg, #0f172a, #1e293b, #0f2027);
+      --bg-light: linear-gradient(135deg, #f8fafc, #e2e8f0, #cbd5e1);
+      --accent-gold: #ffd700;
+      --accent-cyan: #0ea5e9;
+      --glass-bg-dark: rgba(15, 23, 42, 0.6);
+      --glass-bg-light: rgba(255, 255, 255, 0.6);
+      --text-dark: #f8fafc;
+      --text-light: #0f172a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-dark);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.5s ease, color 0.5s ease;
+      padding-bottom: 120px;
+    }
+
+    body.theme-light {
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
+
+    /* BACKGROUND ANIMATION (Outer Space / Floating Bubbles) */
+    .bg-animation {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; pointer-events: none;
+    }
+    .circle {
+      position: absolute; border-radius: 50%; 
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+      animation: floatUp 15s infinite linear;
+    }
+    body.theme-light .circle { background: radial-gradient(circle, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 70%); }
+    @keyframes floatUp { 
+      0% { transform: translateY(110vh) scale(0.5); opacity: 0;} 
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-10vh) scale(1.5); opacity: 0;} 
+    }
+
+    /* TOAST NOTIFICATION */
+    .toast {
+      position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, #ffd700, #ff8e53); color: #000;
+      padding: 12px 25px; border-radius: 50px; z-index: 9999999;
+      font-weight: 700; font-size: 14px; text-align: center;
+      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+      transition: top 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none; width: 90%; max-width: 400px;
+    }
+    .toast.show { top: 20px; }
+
+    .glass-panel {
+      background: var(--glass-bg-dark);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    }
+
+    body.theme-light .glass-panel {
+      background: var(--glass-bg-light);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    /* LANG TOGGLE CSS */
+    .en-text { display: none; }
+    body.lang-en .id-text { display: none; }
+    body.lang-en .en-text { display: block; }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      z-index: 999999; display: flex; align-items: center; justify-content: center;
+      padding: 20px; backdrop-filter: blur(10px);
+    }
+    .modal-content {
+      max-width: 500px; width: 100%; text-align: center;
+      border: 2px solid var(--accent-gold);
+      position: relative; overflow: hidden; z-index: 10;
+      animation: zoomBounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-content::before {
+      content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+      background: conic-gradient(transparent, var(--accent-gold), transparent 30%);
+      animation: rotateLight 4s linear infinite; opacity: 0.15; z-index: -1;
+      pointer-events: none;
+    }
+
+    @keyframes rotateLight { 100% { transform: rotate(360deg); } }
+    @keyframes zoomBounce { 
+      0% { transform: scale(0.5); opacity: 0; } 
+      80% { transform: scale(1.05); opacity: 1; } 
+      100% { transform: scale(1); } 
+    }
+
+    .modal-btn {
+      background: linear-gradient(135deg, #ffd700, #ff8e53);
+      color: #000; border: none; padding: 12px 30px; border-radius: 50px;
+      font-weight: 700; cursor: pointer; margin-top: 20px; font-size: 16px;
+      position: relative; z-index: 9999; display: inline-block; pointer-events: auto;
+      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4); transition: all 0.3s;
+    }
+    .modal-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 35px rgba(255, 215, 0, 0.6); }
+
+    /* HEADER */
+    header { text-align: center; padding: 60px 20px 20px; position: relative; z-index: 5;}
+    
+    .anniv-logo-container {
+      width: 120px; height: 120px; margin: 0 auto 15px; background: linear-gradient(135deg, #ffd700, #ff8e53);
+      border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #1e293b; box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); border: 4px solid rgba(255,255,255,0.3);
+      animation: pulseLogo 2s infinite alternate;
+    }
+    @keyframes pulseLogo { from { transform: scale(1); } to { transform: scale(1.05); } }
+    .anniv-logo-container span { font-weight: 900; font-family: 'Playfair Display'; line-height: 1; }
+    .anniv-number { font-size: 45px; }
+    .anniv-text { font-size: 14px; text-transform: uppercase; letter-spacing: 2px;}
+
+    h1 { font-family: 'Playfair Display', serif; font-size: 42px; color: var(--accent-gold); margin-bottom: 5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);}
+    .jargon { font-size: 18px; font-style: italic; opacity: 0.8; }
+
+    /* SOSMED ICONS */
+    .header-sosmed { display: flex; justify-content: center; gap: 15px; margin-top: 15px; flex-wrap: wrap;}
+    .sosmed-btn { 
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); 
+      color: var(--accent-cyan); padding: 8px 15px; border-radius: 20px; text-decoration: none; 
+      font-size: 12px; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; gap: 5px;
+    }
+    body.theme-light .sosmed-btn { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); color: #0284c7; }
+    .sosmed-btn:hover { transform: translateY(-2px); background: var(--accent-cyan); color: #fff; border-color: var(--accent-cyan); }
+
+    /* SECTIONS */
+    .container { max-width: 1000px; margin: 0 auto; padding: 20px; position: relative; z-index: 5;}
+    section { margin-bottom: 40px; display: none; animation: fadeIn 0.5s ease; }
+    section.active { display: block; }
+
+    h2 { font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 20px; color: var(--accent-cyan); border-bottom: 1px solid; padding-bottom: 10px;}
+    body.theme-light h2 { border-color: rgba(0,0,0,0.1); }
+    
+    /* STORY & STATS */
+    .story-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+    .story-text p { margin-bottom: 15px; line-height: 1.8; text-align: justify; }
+    
+    .stats-container { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); height: fit-content;}
+    body.theme-light .stats-container { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.1); }
+    .stat-box { margin-bottom: 15px; text-align: center; padding-bottom: 15px; border-bottom: 1px dashed rgba(255,255,255,0.1);}
+    body.theme-light .stat-box { border-bottom-color: rgba(0,0,0,0.1); }
+    .stat-box:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0;}
+    .stat-number { font-size: 32px; font-weight: 700; color: var(--accent-gold); font-family: 'Playfair Display'; line-height: 1;}
+    .stat-label { font-size: 12px; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;}
+
+    /* INFOGRAFIS GEREJA */
+    .church-stats { margin-top: 25px; padding-top: 20px; border-top: 1px dashed rgba(255,255,255,0.2); }
+    body.theme-light .church-stats { border-color: rgba(0,0,0,0.1); }
+    .church-stats h3 { font-size: 16px; color: var(--accent-gold); margin-bottom: 15px; text-align: center; }
+    .bar-wrap { display: flex; align-items: center; margin-bottom: 10px; font-size: 12px; font-weight: 600;}
+    .bar-wrap span { width: 100px; flex-shrink: 0; }
+    .bar-bg { flex-grow: 1; background: rgba(255,255,255,0.1); height: 12px; border-radius: 10px; overflow: hidden;}
+    body.theme-light .bar-bg { background: rgba(0,0,0,0.1); }
+    .bar-fill { height: 100%; background: linear-gradient(90deg, #0ea5e9, #3b82f6); border-radius: 10px; animation: loadBar 1.5s ease-out forwards;}
+    @keyframes loadBar { from { width: 0; } }
+
+    /* KUIS INTERAKTIF TRIVIA */
+    .quiz-section { margin-top: 40px; padding-top: 30px; border-top: 1px dashed rgba(255,255,255,0.2); }
+    body.theme-light .quiz-section { border-color: rgba(0,0,0,0.1); }
+    .quiz-trigger-container { text-align: center; }
+    .quiz-trigger-btn {
+      background: linear-gradient(135deg, #0ea5e9, #3b82f6); color: white; border: none; padding: 12px 25px;
+      border-radius: 30px; font-family: 'Poppins'; font-weight: bold; font-size: 14px; cursor: pointer;
+      box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4); transition: 0.3s;
+    }
+    .quiz-trigger-btn:hover { transform: scale(1.05); }
+
+    .quiz-card { background: rgba(0,0,0,0.2); padding: 25px; border-radius: 16px; border: 1px solid var(--accent-cyan); position: relative; margin-top: 20px;}
+    body.theme-light .quiz-card { background: rgba(14, 165, 233, 0.05); }
+    .quiz-progress { font-size: 12px; color: var(--accent-gold); margin-bottom: 10px; font-weight: 600;}
+    .quiz-question { font-size: 16px; font-weight: 500; margin-bottom: 15px; line-height: 1.5;}
+    .quiz-options { display: flex; flex-direction: column; gap: 12px; }
+    
+    /* ANIMASI TOMBOL KUIS */
+    .quiz-opt-btn { 
+      background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); color: inherit; 
+      padding: 14px 20px; border-radius: 12px; cursor: pointer; text-align: left; 
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-family: 'Poppins'; font-size: 14px;
+      position: relative; overflow: hidden;
+    }
+    body.theme-light .quiz-opt-btn { background: #fff; border-color: #cbd5e1; }
+    .quiz-opt-btn:hover { 
+      background: rgba(14, 165, 233, 0.2); border-color: var(--accent-cyan); 
+      transform: translateY(-3px) scale(1.02); box-shadow: 0 5px 15px rgba(14, 165, 233, 0.3);
+    }
+    .quiz-opt-btn.correct { background: #10b981; color: white; border-color: #10b981; transform: scale(1.05); box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);}
+    .quiz-opt-btn.wrong { background: #ef4444; color: white; border-color: #ef4444; transform: scale(0.95); opacity: 0.7;}
+
+    /* FILTERS & MEMBERS GRID */
+    .filter-bar { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; justify-content: center;}
+    .filter-btn {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      color: inherit; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: 0.3s;
+    }
+    body.theme-light .filter-btn { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); }
+    .filter-btn.active { background: var(--accent-cyan); color: #fff; border-color: var(--accent-cyan); }
+    
+    .members-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+    .member-card { text-align: left; padding: 20px; position: relative; overflow: hidden; }
+    
+    /* ANIMATED PROFILE PHOTO */
+    .photo-container { position: relative; width: 90px; height: 90px; margin-bottom: 15px; cursor: pointer;}
+    .photo-ring { 
+      position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; 
+      border-radius: 50%; border: 2px dashed var(--accent-gold); 
+      animation: spin 8s linear infinite; opacity: 0.5;
+    }
+    .member-photo { 
+      width: 100%; height: 100%; border-radius: 50%; background: #334155; 
+      display: flex; align-items: center; justify-content: center; font-size: 35px; 
+      border: 3px solid var(--glass-bg-dark); position: relative; z-index: 2;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    body.theme-light .member-photo { background: #cbd5e1; border-color: #fff;}
+    .photo-container:hover .member-photo { transform: scale(1.1) rotate(5deg); }
+    .photo-container:hover .photo-ring { opacity: 1; border-style: solid; animation: spin 3s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    .member-name { font-size: 18px; font-weight: 700; margin-bottom: 5px; color: var(--accent-gold); }
+    body.theme-light .member-name { color: #b45309; }
+    .member-detail { font-size: 13px; margin-bottom: 6px; line-height: 1.4; opacity: 0.9;}
+    .ig-link { display: inline-block; margin-top: 10px; font-size: 12px; color: var(--accent-cyan); text-decoration: none; font-weight: bold;}
+
+    /* MAPS & EVENTS */
+    .map-container { position: relative; width: 100%; height: 400px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px;}
+    body.theme-light .map-container { border-color: rgba(0,0,0,0.1); }
+    
+    .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;}
+    .news-card { background: rgba(0,0,0,0.2); border-left: 4px solid var(--accent-cyan); padding: 15px; border-radius: 8px; transition: 0.3s;}
+    body.theme-light .news-card { background: rgba(14, 165, 233, 0.05); }
+    .news-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    .news-date { font-size: 11px; color: var(--accent-gold); font-weight: 600; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;}
+    .news-title { font-size: 15px; font-weight: 700; margin-bottom: 8px;}
+    .news-desc { font-size: 13px; opacity: 0.9; line-height: 1.5;}
+
+    /* DOKUMENTASI FRAMES */
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+    .frame-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; text-align: center; transition: 0.3s; }
+    body.theme-light .frame-box { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.1); }
+    .frame-box:hover { transform: translateY(-5px); background: rgba(255,255,255,0.1); box-shadow: 0 5px 15px rgba(0,0,0,0.3);}
+    .frame-img-placeholder { width: 100%; height: 140px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; font-size: 40px; overflow: hidden; background: rgba(0,0,0,0.3); }
+    body.theme-light .frame-img-placeholder { background-color: rgba(0,0,0,0.1); }
+    .frame-title { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+    .drive-btn { font-size: 11px; color: #fff; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 5px; background: #10b981; padding: 6px 10px; border-radius: 15px; transition: 0.3s; }
+    .drive-btn:hover { background: #059669; transform: scale(1.05);}
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(15px); border-top: 1px solid rgba(255,255,255,0.1);
+      padding: 15px 20px; z-index: 9000; display: flex; flex-direction: column; align-items: center; gap: 10px;
+    }
+    body.theme-light .bottom-nav { background: rgba(255, 255, 255, 0.95); border-top: 1px solid rgba(0,0,0,0.1); }
+    
+    .nav-buttons-container { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;}
+    .nav-btn { background: none; border: none; color: #94a3b8; font-size: 14px; font-weight: 600; cursor: pointer; padding: 5px 10px; font-family: 'Poppins'; }
+    body.theme-light .nav-btn { color: #475569; }
+    .nav-btn.active { color: var(--accent-gold); border-bottom: 2px solid var(--accent-gold); }
+    body.theme-light .nav-btn.active { color: #b45309; border-bottom-color: #b45309; }
+
+    .util-btn { font-size: 12px; padding: 4px 10px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: inherit; cursor: pointer;}
+    body.theme-light .util-btn { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.2); }
+    
+    .footer-text { font-size: 11px; color: #94a3b8; font-style: italic; text-align: center; margin-top: 5px;}
+    body.theme-light .footer-text { color: #475569; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .stagger-anim { animation: fadeIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+
+    @media (max-width: 768px) { .story-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) { body { padding-bottom: 160px; } .bottom-nav { padding: 10px; } .nav-btn { font-size: 12px; padding: 5px;} }
+  </style>
+</head>
+<body class="lang-id">
+
+<!-- ANIMATED BACKGROUND -->
+<div class="bg-animation" id="bg-anim"></div>
+
+<!-- TOAST KEBERSAMAAN -->
+<div id="toast" class="toast">
+  ✨ RAYAKAN KEBERSAMAAN INI, 1 TAHUN OOT tetap terkoneksi!
+</div>
+
+<!-- ANNIVERSARY & BIRTHDAY MODAL -->
+<div id="welcome-modal" class="modal-overlay">
+  <div class="glass-panel modal-content">
+    <div style="font-size: 50px; margin-bottom: 10px; position: relative; z-index: 10;">🎉✨</div>
+    <h2 style="border: none; color: var(--accent-gold); margin-bottom: 5px; position: relative; z-index: 10;" class="id-text">Happy 1st Anniversary<br>Circle OOT!</h2>
+    <h2 style="border: none; color: var(--accent-gold); margin-bottom: 5px; position: relative; z-index: 10;" class="en-text">Happy 1st Anniversary<br>OOT Circle!</h2>
+    
+    <p class="id-text" style="margin-bottom: 15px; position: relative; z-index: 10;">Agustus 2025 - Agustus 2026<br>Satu tahun menentang arus, setahun penuh tawa!</p>
+    <p class="en-text" style="margin-bottom: 15px; position: relative; z-index: 10;">August 2025 - August 2026<br>A year of defying the odds, a year of endless laughs!</p>
+
+    <!-- Notif Ultah -->
+    <div style="background: rgba(255,107,129,0.2); border: 1px solid #ff6b81; padding: 15px; border-radius: 12px; margin-top: 15px; text-align: left; position: relative; z-index: 10;">
+      <strong style="color: #ff6b81;" class="id-text">🎂 Info Ultah Bulan Ini (Agustus):</strong>
+      <strong style="color: #ff6b81;" class="en-text">🎂 This Month's Birthdays (August):</strong>
+      <ul style="margin-left: 20px; margin-top: 5px; font-size: 14px;">
+        <li><b>Agnes Monica Manurung</b> (8 Agustus)</li>
+        <li><b>Elvi Agustina Sianturi</b> (14 Agustus)</li>
+      </ul>
+      <p style="font-size: 12px; margin-top: 8px; font-style: italic;" class="id-text">Jangan lupa ditagih traktirannya ya, kawan!</p>
+      <p style="font-size: 12px; margin-top: 8px; font-style: italic;" class="en-text">Don't forget to ask for treats, guys!</p>
+    </div>
+
+    <button class="modal-btn id-text" onclick="closeModal()">Masuk ke Basecamp 🚀</button>
+    <button class="modal-btn en-text" onclick="closeModal()">Enter Basecamp 🚀</button>
+  </div>
+</div>
+
+<header>
+  <div class="anniv-logo-container">
+    <span class="anniv-number">1<span style="font-size: 20px;">st</span></span>
+    <span class="anniv-text">Anniv</span>
+  </div>
+  <h1>Circle OOT</h1>
+  <p class="jargon id-text">"Di luar topik, tapi selalu di dalam hati."</p>
+  <p class="jargon en-text">"Out of topic, but always in our hearts."</p>
+  
+  <div class="header-sosmed">
+    <a href="#" class="sosmed-btn">🟢 WhatsApp</a>
+    <a href="#" class="sosmed-btn">🟣 IG</a>
+    <a href="#" class="sosmed-btn">🎵 TikTok</a>
+    <a href="#" class="sosmed-btn">💬 Line</a>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- SECTION: ABOUT US -->
+  <section id="sec-about" class="active glass-panel">
+    <h2 class="id-text">Kisah Kami</h2>
+    <h2 class="en-text">Our Story</h2>
+    
+    <div class="story-grid">
+      <div class="story-text">
+        <!-- ID VERSION -->
+        <div class="id-text">
+          <p>Kami tak pernah merencanakan untuk menjadi "kami" yang sekarang. Semuanya bermula dari langkah kecil di GKPA Bandar Lampung pada Agustus 2025, di mana kami berkumpul dengan satu visi tulus melayani.</p>
+          <p>Namun, di tengah niat suci itu, telinga kami menangkap hal yang tak seharusnya terucap di rumah pelayanan. Di sanalah sumbu itu menyala. Kami menolak diam. Kami bersatu, berdiri di garis depan untuk menentang ketidakpantasan tersebut.</p>
+          <p>Badai kecil itu sempat membuat gaduh, namun seiring berjalannya waktu, riaknya perlahan mereda. Menariknya, dari pertentangan itulah sebuah ikatan yang lebih kuat lahir. Kami yang awalnya hanya sekumpulan nama, berubah menjadi sebuah keluarga bernama <b>Circle OOT</b>.</p>
+          <p>Dari diskusi berat, kami beralih ke tawa lepas. Dari ketegangan, kami beralih ke momen bernyanyi bersama, <i>jamming</i> lagu-lagu favorit, hingga aroma daging panggang yang menemani malam-malam <i>hangout</i> kami yang panjang.</p>
+          <p>Kini, jarak mungkin membentang. Ada yang menapaki aspal Depok, merantau ke Palembang, kembali ke Simalungun, hingga yang setia di pelosok Bandar Lampung. Tapi satu hal yang pasti: sejauh apa pun kami berpencar, komunikasi tak pernah terputus. Karena OOT bukan sekadar nama, melainkan rumah.</p>
+        </div>
+        <!-- EN VERSION -->
+        <div class="en-text">
+          <p>We never planned to become the "us" we are today. It all started with a small step at GKPA Bandar Lampung in August 2025, where we gathered with one sincere vision to serve.</p>
+          <p>However, amidst that sacred intention, we heard things that should never have been spoken in a place of ministry. That was the spark. We refused to stay silent. We united, standing on the front lines to oppose the impropriety.</p>
+          <p>The small storm caused an uproar, but as time passed, the ripples slowly settled. Interestingly, from that very conflict, a stronger bond was born. We, who were initially just a group of names, turned into a family called <b>OOT Circle</b>.</p>
+          <p>From heavy discussions, we shifted to unrestrained laughter. From tension, we moved to moments of singing together, jamming to our favorite songs, and the aroma of roasted meat accompanying our long hangout nights.</p>
+          <p>Now, distance may separate us. Some walk the streets of Depok, migrate to Palembang, return to Simalungun, while others remain loyal to the corners of Bandar Lampung. But one thing is certain: no matter how far we scatter, our communication is never broken. Because OOT is not just a name; it is home.</p>
+        </div>
+
+        <!-- INFOGRAFIS GEREJA -->
+        <div class="church-stats">
+          <h3 class="id-text">📊 Sebaran Gereja Asal OOT</h3>
+          <h3 class="en-text">📊 OOT Church Origins</h3>
+          
+          <div class="bar-wrap"><span>HKBP (4)</span><div class="bar-bg"><div class="bar-fill" style="width: 36%"></div></div></div>
+          <div class="bar-wrap"><span>GKPA Asli (3)</span><div class="bar-bg"><div class="bar-fill" style="width: 27%; background: linear-gradient(90deg, #f59e0b, #fbbf24)"></div></div></div>
+          <div class="bar-wrap"><span>Pentakosta (2)</span><div class="bar-bg"><div class="bar-fill" style="width: 18%; background: linear-gradient(90deg, #10b981, #34d399)"></div></div></div>
+          <div class="bar-wrap"><span>GKKPD (1)</span><div class="bar-bg"><div class="bar-fill" style="width: 9%; background: linear-gradient(90deg, #8b5cf6, #a78bfa)"></div></div></div>
+          <div class="bar-wrap"><span>GPM (1)</span><div class="bar-bg"><div class="bar-fill" style="width: 9%; background: linear-gradient(90deg, #ec4899, #f472b6)"></div></div></div>
+        </div>
+      </div>
+      
+      <!-- STATS BOX -->
+      <div class="stats-container">
+        <div class="stat-box">
+          <div class="stat-number">11</div>
+          <div class="stat-label id-text">Personil Aktif</div>
+          <div class="stat-label en-text">Active Members</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">22</div>
+          <div class="stat-label id-text">Rata-rata Usia</div>
+          <div class="stat-label en-text">Average Age</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">4</div>
+          <div class="stat-label id-text">Provinsi Sebaran</div>
+          <div class="stat-label en-text">Provinces Reached</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">100%</div>
+          <div class="stat-label id-text">Solidaritas</div>
+          <div class="stat-label en-text">Solidarity</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KUIS INTERAKTIF TRIVIA -->
+    <div class="quiz-section">
+      <h3 style="text-align: center; margin-bottom: 20px;" class="id-text">🎯 Uji Seberapa OOT Kamu!</h3>
+      <h3 style="text-align: center; margin-bottom: 20px;" class="en-text">🎯 Test Your OOT Knowledge!</h3>
+      
+      <div class="id-text" style="text-align: center; font-size: 14px; margin-bottom: 15px;">Terdapat 40 pertanyaan random yang akan diacak jadi 5 Pertanyaan. Jawab 5 pertanyaan acak di bawah ini untuk melihat seberapa kenal kamu dengan circle ini.</div>
+      <div class="en-text" style="text-align: center; font-size: 14px; margin-bottom: 15px;">There is 40 random question that will be served in 5 question. Answer 5 random questions below to see how well you know this circle.</div>
+
+      <div class="quiz-trigger-container">
+        <button class="quiz-trigger-btn id-text" onclick="showQuiz()">Mulai Ujian OOT 📝</button>
+        <button class="quiz-trigger-btn en-text" onclick="showQuiz()">Start OOT Exam 📝</button>
+      </div>
+
+      <div id="quiz-area" class="quiz-card" style="display: none;">
+        <div class="quiz-progress" id="quiz-progress">Pertanyaan 1 dari 5</div>
+        <div class="quiz-question" id="quiz-question">Loading...</div>
+        <div class="quiz-options" id="quiz-options">
+          <!-- Injected by JS -->
+        </div>
+        <button id="next-quiz-btn" style="display:none; margin-top: 20px; padding: 10px 25px; border-radius: 20px; background: var(--accent-cyan); color: white; border: none; cursor: pointer; font-family: 'Poppins'; font-weight: bold; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Selanjutnya ➡️</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: MEMBERS -->
+  <section id="sec-members" class="glass-panel">
+    <h2 class="id-text">Personil Circle</h2>
+    <h2 class="en-text">Circle Roster</h2>
+    
+    <div class="filter-bar">
+      <span class="id-text" style="font-size: 14px; display: flex; align-items: center;">Urutkan:</span>
+      <span class="en-text" style="font-size: 14px; display: flex; align-items: center;">Sort by:</span>
+      <button class="filter-btn active id-text" onclick="renderMembers('random')">Acak (Random)</button>
+      <button class="filter-btn id-text" onclick="renderMembers('name')">Abjad</button>
+      <button class="filter-btn id-text" onclick="renderMembers('age')">Usia</button>
+      <button class="filter-btn id-text" onclick="renderMembers('join')">Tgl Join</button>
+
+      <button class="filter-btn active en-text" onclick="renderMembers('random')">Random</button>
+      <button class="filter-btn en-text" onclick="renderMembers('name')">Alphabet</button>
+      <button class="filter-btn en-text" onclick="renderMembers('age')">Age</button>
+      <button class="filter-btn en-text" onclick="renderMembers('join')">Join Date</button>
+    </div>
+
+    <!-- TABEL STATISTIK USIA -->
+    <div class="id-text" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); font-size: 13px; text-align: center;">
+       <b>📊 Statistik Kelahiran:</b> 2002 (6 Orang) | 2003 (3 Orang) | 2004 (2 Orang). <br><i>Median Usia: ~23 Tahun.</i>
+    </div>
+    <div class="en-text" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); font-size: 13px; text-align: center;">
+       <b>📊 Birth Statistics:</b> 2002 (6 Members) | 2003 (3 Members) | 2004 (2 Members). <br><i>Median Age: ~23 Years Old.</i>
+    </div>
+
+    <div class="members-grid" id="members-container">
+      <!-- Injected by JS -->
+    </div>
+  </section>
+
+  <!-- SECTION: EVENTS & MAPS -->
+  <section id="sec-explore" class="glass-panel">
+    <h2 class="id-text">Peta Persebaran & Event</h2>
+    <h2 class="en-text">Locations & Events</h2>
+    
+    <div style="margin-bottom: 25px;">
+      <h3 style="margin-bottom: 10px; font-size: 18px; color: var(--accent-gold);" class="id-text">📍 Radar Lokasi OOT</h3>
+      <h3 style="margin-bottom: 10px; font-size: 18px; color: var(--accent-gold);" class="en-text">📍 OOT Location Radar</h3>
+      
+      <!-- STATISTIK LOKASI -->
+      <div style="display: flex; gap: 15px; margin-bottom: 15px; font-size: 13px; flex-wrap: wrap;">
+        <div style="background: rgba(14, 165, 233, 0.2); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--accent-cyan);">
+           <span class="id-text">🏙️ Di Bandar Lampung: <b>6 Orang</b></span>
+           <span class="en-text">🏙️ In Bandar Lampung: <b>6 Members</b></span>
+        </div>
+        <div style="background: rgba(255, 107, 129, 0.2); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--accent-coral);">
+           <span class="id-text">✈️ Luar Lampung: <b>5 Orang</b></span>
+           <span class="en-text">✈️ Outside Lampung: <b>5 Members</b></span>
+        </div>
+      </div>
+
+      <!-- MAPS MENGGUNAKAN LEAFLET.JS -->
+      <div id="map" class="map-container" style="background: #111;"></div>
+    </div>
+
+    <!-- NEWS & HEADLINES -->
+    <h3 style="margin-bottom: 15px; font-size: 18px; color: var(--accent-gold);" class="id-text">📰 Headline News OOT</h3>
+    <h3 style="margin-bottom: 15px; font-size: 18px; color: var(--accent-gold);" class="en-text">📰 OOT Headline News</h3>
+    
+    <div class="news-grid">
+      <div class="news-card">
+        <div class="news-date">📅 1 Agustus 2026</div>
+        <div class="news-title id-text">Warga OOT Telah Melakukan Panggang-Panggang!</div>
+        <div class="news-title en-text">OOT Members Hosted a BBQ Party!</div>
+        <div class="news-desc id-text">Keseruan terjadi lagi! Warga OOT kembali mengadakan sesi manggang-manggang daging semalaman penuh. Tawa, cerita, dan perut kenyang menjadi penutup hari yang sempurna.</div>
+        <div class="news-desc en-text">The fun strikes again! OOT members hosted another all-night BBQ session. Laughter, stories, and full stomachs concluded the perfect day.</div>
+      </div>
+
+      <div class="news-card">
+        <div class="news-date">📅 26 Juli 2026 📍 HKBP Kedaton</div>
+        <div class="news-title id-text">Kumpul, Syukuran & Ibadah Bareng</div>
+        <div class="news-title en-text">Gathering, Thanksgiving & Worship</div>
+        <div class="news-desc id-text">Warga OOT melakukan ibadah bareng di HKBP Kedaton. Acara ini sekalian dalam rangka kumpul-kumpul dan syukuran. Menariknya, beberapa di antara kami juga melayani sebagai pelayan di ibadah sore tersebut!</div>
+        <div class="news-desc en-text">OOT members worshiped together at HKBP Kedaton. This event also served as a gathering and thanksgiving. Interestingly, some of us also served during that afternoon service!</div>
+      </div>
+
+      <div class="news-card" style="border-left-color: var(--accent-gold);">
+        <div class="news-date">🔜 Coming Soon</div>
+        <div class="news-title id-text">Tektokan Rajabasa</div>
+        <div class="news-title en-text">Rajabasa Summit</div>
+        <div class="news-desc id-text">Siapkan stamina kalian! Kita bakal manjat gunung bareng, bikin api unggun, dan ngulang keseruan manggang-manggang di atas ketinggian. (Jadwal menyusul).</div>
+        <div class="news-desc en-text">Prepare your stamina! We're hiking together, making a campfire, and recreating our BBQ fun at high altitudes. (Schedule TBA).</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: DOKUMENTASI -->
+  <section id="sec-docs" class="glass-panel">
+    <h2 class="id-text">Ruang Kenangan</h2>
+    <h2 class="en-text">Memory Lane</h2>
+    <p style="font-size: 14px; margin-bottom: 20px;" class="id-text">Sekilas momen epik kita. Klik tombol Drive di bawah foto untuk akses Full HD!</p>
+    <p style="font-size: 14px; margin-bottom: 20px;" class="en-text">A glimpse of our epic moments. Click the Drive button below the photo for Full HD access!</p>
+    
+    <div class="gallery-grid">
+      <div class="frame-box">
+        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.05);">📸</div>
+        <div class="frame-title">Mandok Hata (Sept 25)</div>
+        <a href="#" target="_blank" class="drive-btn">📁 Buka Drive</a>
+      </div>
+      <div class="frame-box">
+        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.1);">🍖</div>
+        <div class="frame-title">Manggang2 (08 Sept 25)</div>
+        <a href="#" target="_blank" class="drive-btn">📁 Buka Drive</a>
+      </div>
+      <div class="frame-box">
+        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.05);">🌙</div>
+        <div class="frame-title">Tragedi Malam</div>
+        <a href="#" target="_blank" class="drive-btn">📁 Buka Drive</a>
+      </div>
+      <div class="frame-box">
+        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.1);">🎸</div>
+        <div class="frame-title">Video Jamming</div>
+        <a href="#" target="_blank" class="drive-btn">📁 Buka Drive</a>
+      </div>
+      <div class="frame-box">
+        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.05);">🌅</div>
+        <div class="frame-title">Embung ITERA (Des 25)</div>
+        <a href="#" target="_blank" class="drive-btn">📁 Buka Drive</a>
+      </div>
+      <div class="frame-box">
+        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.1);">👥</div>
+        <div class="frame-title">Foto April 2026</div>
+        <a href="#" target="_blank" class="drive-btn">📁 Buka Drive</a>
+      </div>
+      <div class="frame-box">
+        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.05);">🎇</div>
+        <div class="frame-title">Foto Juli 2026</div>
+        <a href="#" target="_blank" class="drive-btn">📁 Buka Drive</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<div class="bottom-nav">
+  <div class="nav-buttons-container">
+    <button class="nav-btn active" onclick="switchTab('sec-about', this)"><span class="id-text">Kisah & Kuis</span><span class="en-text">Story & Quiz</span></button>
+    <button class="nav-btn" onclick="switchTab('sec-members', this)"><span class="id-text">Personil</span><span class="en-text">Roster</span></button>
+    <button class="nav-btn" onclick="switchTab('sec-explore', this)"><span class="id-text">Peta & Event</span><span class="en-text">Map & Events</span></button>
+    <button class="nav-btn" onclick="switchTab('sec-docs', this)"><span class="id-text">Memori</span><span class="en-text">Memory</span></button>
+  </div>
+  <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+    <button class="util-btn" onclick="toggleTheme()">🌓 Theme</button>
+    <button class="util-btn" onclick="toggleLang()">🌐 ID/EN</button>
+  </div>
+  <div class="footer-text">
+    <span class="id-text">Website ini dibuat oleh Biro IT OOT, Diupdate 21 Agustus 2026 Pukul 21.45 WIB.</span>
+    <span class="en-text">This website was created by OOT IT Bureau, Updated August 21, 2026 at 21:45 WIB.</span>
+  </div>
+</div>
+
+<script>
+  // BG ANIMATION GENERATOR
+  const bgAnim = document.getElementById('bg-anim');
+  for(let i=0; i<25; i++) {
+    let circle = document.createElement('div');
+    circle.classList.add('circle');
+    let size = Math.random() * 60 + 10;
+    circle.style.width = size + 'px';
+    circle.style.height = size + 'px';
+    circle.style.left = Math.random() * 100 + 'vw';
+    circle.style.animationDuration = (Math.random() * 15 + 10) + 's';
+    circle.style.animationDelay = (Math.random() * 10) + 's';
+    bgAnim.appendChild(circle);
+  }
+
+  // Member Data
+  const rawMembers = [
+    { id: 1, name: "Andre Padang, S.T.", birth: "2002-03", join: "2025-09", campus: "ITERA - Teknik Sistem Energi", role: "Bass, Gitar, Drum, Nyanyi", hobby: "Main Musik, Pendingin Panel Surya", loc: "Hotel Padang Sukarame, Bandar Lampung", ig: "andreepadangg", icon: "👦🏻", ayat: "To Be Confirmed" },
+    { id: 2, name: "Agnes Monica Manurung, S.Si.", birth: "2002-08-08", join: "2025-08", campus: "ITERA - Kimia", role: "Nyanyi, Gitar, Piano", hobby: "Aduk botol, Pelihara mencit", loc: "Bah Gunung, Simalungun, Sumut", ig: "monicagnezz", icon: "👩🏻", ayat: "To Be Confirmed" },
+    { id: 3, name: "Mangihut Tua Harahap, S.T.", birth: "2002-08", join: "2025-09", campus: "UNILA - Teknik Pertanian", role: "Nyanyi, Gitar, Bass", hobby: "Buat pelet dari kulit durian", loc: "Palembang, Sumatera Selatan", ig: "mangihut_tua", icon: "👦🏽", ayat: "To Be Confirmed" },
+    { id: 4, name: "Glendito Rayadi S., S.T.", birth: "2003-04", join: "2025-08", campus: "ITERA - Teknik Geomatika", role: "Nyanyi (Baritone), Piano, Gitar, Bass", hobby: "Web/App Dev, SIG, Menulis", loc: "Margonda, Depok, Jawa Barat", ig: "glendito_smg25", icon: "👦🏻", ayat: "Efesus 6:10" },
+    { id: 5, name: "Elvi Agustina Sianturi, S.T.", birth: "2002-08-14", join: "2025-08", campus: "ITERA - Teknik Kimia", role: "Nyanyi", hobby: "Rancang Pabrik Asam Salisilat, Memasak", loc: "Pelosok Way Halim, Bandar Lampung", ig: "elviagustinasianturi", icon: "👩🏽", ayat: "To Be Confirmed" },
+    { id: 6, name: "Yolanda Natalia Simanungkalit, S.T.", birth: "2002-12", join: "2025-08", campus: "ITERA - Teknik Kimia", role: "Nyanyi", hobby: "Rancang Pabrik Asam Salisilat, Memasak", loc: "Pelosok Way Halim, Bandar Lampung", ig: "yolndnataliaa", icon: "👩🏻", ayat: "To Be Confirmed" },
+    { id: 7, name: "Richad Syahputra Sihombing, S.T.", birth: "2003-06", join: "2025-08", campus: "ITERA - Teknik Sistem Energi", role: "Nyanyi, Piano, Gitar, Bass, Drum", hobby: "Soundman", loc: "Kampung Baru, Bandar Lampung", ig: "richad.sihombing", icon: "👦🏻", ayat: "To Be Confirmed" },
+    { id: 8, name: "Robert Johannes Hutabarat, S.H.", birth: "2004-04", join: "2025-08", campus: "UNILA - Ilmu Hukum", role: "Nyanyi, Gitar, Bass, Drum", hobby: "Legal Drafter", loc: "Pelosok Sutoyo, Jakarta Timur, DKJ", ig: "roberthutabaratt", icon: "👦🏽", ayat: "To Be Confirmed" },
+    { id: 9, name: "Andy Brema Sitompul, S.Hub.Int.", birth: "2002-06", join: "2025-11", campus: "UNILA - Hubungan Internasional", role: "Nyanyi, Piano, Gitar, Bass", hobby: "Aktivis Kancah Global", loc: "Bataranila, Bandar Lampung", ig: "andy_brema04", icon: "👦🏻", ayat: "To Be Confirmed" },
+    { id: 10, name: "Sharoon Evangelyne Sanammase, S.Si.", birth: "2004-03", join: "2025-08", campus: "ITERA - Sains Atmosfer & Keplanetan", role: "Nyanyi", hobby: "Mengamati Planet", loc: "Belwis, Way Huwi, Lampung Selatan", ig: "shesan02_", icon: "👩🏽", ayat: "To Be Confirmed" },
+    { id: 11, name: "Mades Roma Novriyanti Sinaga, S.Si.", birth: "2003-11", join: "2025-08", campus: "ITERA - Kimia", role: "Nyanyi, Mengajar", hobby: "Mengaduk Botol, Memasak", loc: "Medan Amplas, Kota Medan, Sumut", ig: "mades.sinaga", icon: "👩🏻", ayat: "To Be Confirmed" }
+  ];
+
+  function parseDate(dateStr) {
+    if(!dateStr) return new Date(2100,0,1).getTime();
+    let parts = dateStr.split('-');
+    let y = parseInt(parts[0]); let m = parseInt(parts[1]) - 1; let d = parts[2] ? parseInt(parts[2]) : 1;
+    return new Date(y, m, d).getTime();
+  }
+
+  function shuffleArray(array) {
+    let curId = array.length, randomId;
+    while (0 !== curId) {
+      randomId = Math.floor(Math.random() * curId);
+      curId -= 1;
+      let tmp = array[curId]; array[curId] = array[randomId]; array[randomId] = tmp;
+    }
+    return array;
+  }
+
+  function renderMembers(sortType) {
+    const btns = document.querySelectorAll('.filter-btn');
+    btns.forEach(b => b.classList.remove('active'));
+    document.querySelectorAll(`.filter-btn[onclick="renderMembers('${sortType}')"]`).forEach(b => b.classList.add('active'));
+
+    let sorted = [...rawMembers];
+    if (sortType === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sortType === 'age') sorted.sort((a, b) => parseDate(a.birth) - parseDate(b.birth));
+    else if (sortType === 'join') sorted.sort((a, b) => parseDate(a.join) - parseDate(b.join));
+    else sorted = shuffleArray(sorted); 
+
+    const container = document.getElementById('members-container');
+    container.innerHTML = '';
+
+    sorted.forEach((m, index) => {
+      let isEn = document.body.classList.contains('lang-en');
+      let joinFmt = m.join.split('-').reverse().join('/');
+      let animDelay = (index * 0.1) + 's';
+      
+      let html = `
+        <div class="member-card glass-panel stagger-anim" style="animation-delay: ${animDelay};">
+          <div class="photo-container" onclick="this.querySelector('.photo-ring').style.borderStyle='solid'">
+            <div class="photo-ring"></div>
+            <div class="member-photo">${m.icon}</div>
+          </div>
+          <div class="member-name">${m.name}</div>
+          <div class="member-detail"><b>🎓 ${isEn ? 'Campus' : 'Kampus'}:</b> ${m.campus}</div>
+          <div class="member-detail"><b>📅 ${isEn ? 'Born' : 'Lahir'}:</b> ${m.birth}</div>
+          <div class="member-detail"><b>🤝 Join:</b> ${joinFmt}</div>
+          <div class="member-detail"><b>✨ ${isEn ? 'Skill/Hobby' : 'Hobi/Keahlian'}:</b> ${m.hobby} | ${m.role}</div>
+          <div class="member-detail"><b>📖 ${isEn ? 'Fav Verse' : 'Ayat Malua'}:</b> <i>${m.ayat}</i></div>
+          <div class="member-detail"><b>📍 ${isEn ? 'Current Loc' : 'Posisi'}:</b> ${m.loc}</div>
+          <a href="https://instagram.com/${m.ig}" target="_blank" class="ig-link">@${m.ig}</a>
+        </div>
+      `;
+      container.innerHTML += html;
+    });
+  }
+
+  // --- LEAFLET MAP INITIATION ---
+  let mapInitialized = false;
+  let map;
+  
+  function initMap() {
+    if(mapInitialized) return;
+    map = L.map('map').setView([-3.0, 102.5], 5);
+    // Dark themed map tiles
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
+    }).addTo(map);
+
+    // Custom pins
+    L.marker([3.537701, 98.717656]).addTo(map).bindPopup("<b>Mades Sinaga</b><br>Medan Amplas");
+    L.marker([2.96, 99.06]).addTo(map).bindPopup("<b>Agnes Manurung</b><br>Simalungun / Siantar");
+    L.marker([-2.975441, 104.771135]).addTo(map).bindPopup("<b>Mangihut Harahap</b><br>Palembang");
+    L.marker([-5.358854, 105.245941]).addTo(map).bindPopup("<b>Basecamp Bandar Lampung</b><br>Andre, Elvi, Yolanda, Richad, Andy, Sharoon");
+    L.marker([-6.2507279, 106.874531]).addTo(map).bindPopup("<b>Robert Hutabarat</b><br>Jakarta Timur");
+    L.marker([-6.361024, 106.833556]).addTo(map).bindPopup("<b>Glendito Rayadi S.</b><br>Depok");
+    
+    mapInitialized = true;
+  }
+
+  function switchTab(tabId, btnElement) {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btnElement.classList.add('active');
+
+    // Fix map rendering issue when hidden
+    if(tabId === 'sec-explore') {
+      initMap();
+      setTimeout(() => map.invalidateSize(), 100);
+    }
+  }
+
+  function toggleTheme() {
+    document.body.classList.toggle('theme-light');
+  }
+
+  function toggleLang() {
+    let isId = document.body.classList.contains('lang-id');
+    document.body.classList.remove(isId ? 'lang-id' : 'lang-en');
+    document.body.classList.add(isId ? 'lang-en' : 'lang-id');
+    renderMembers('random');
+    if(document.getElementById('quiz-area').style.display === 'block') { renderQuiz(); }
+  }
+
+  function closeModal() {
+    document.getElementById('welcome-modal').style.display = 'none';
+    fireConfetti();
+    
+    // Show Toast Kebersamaan slightly after modal close
+    setTimeout(() => {
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 5000);
+    }, 1500);
+  }
+
+  function fireConfetti() {
+    var duration = 4.5 * 1000;
+    var animationEnd = Date.now() + duration;
+    var defaults = { startVelocity: 35, spread: 360, ticks: 70, zIndex: 100000 };
+    function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+
+    var interval = setInterval(function() {
+      var timeLeft = animationEnd - Date.now();
+      if (timeLeft <= 0) { return clearInterval(interval); }
+      var particleCount = 60 * (timeLeft / duration);
+      confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+      confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+      confetti(Object.assign({}, defaults, { particleCount, origin: { x: 0.5, y: 0.5 } })); // Extra confetti in middle
+    }, 200);
+  }
+
+  // --- 30 QUIZ TRIVIA BANK ---
+  const allTriviaQuestions = [
+    { id: "Siapa di antara personil berikut yang kuliahnya BUKAN di kampus ITERA?", en: "Who among these members did NOT study at ITERA?", options: [{ text: "Agnes Monica", isCorrect: false }, { text: "Glendito Rayadi", isCorrect: false }, { text: "Mangihut Tua Harahap", isCorrect: true }, { text: "Mades Roma", isCorrect: false }] },
+    { id: "Di bawah ini warga OOT yang sering masak bebong (bukan kaleng-kaleng) adalah...", en: "The OOT members known for cooking the best pork dishes are...", options: [{ text: "Andre & Glendito", isCorrect: false }, { text: "Richad & Robert", isCorrect: false }, { text: "Yolanda & Elvi", isCorrect: true }, { text: "Mangihut & Andy", isCorrect: false }] },
+    { id: "Di bawah ini yang pernah menjadikan kostannya sebagai tempat tinggal buat pengungsi yang datang dari antah berantah pada Tahun 2026 adalah?", en: "Who turned their boarding house into a shelter for random refugees in 2026?", options: [{ text: "Richad Syahputra", isCorrect: false }, { text: "Glendito Rayadi", isCorrect: false }, { text: "Andy Brema", isCorrect: false }, { text: "Andre Padang", isCorrect: true }] },
+    { id: "Siapakah warga OOT yang merupakan warga asli pelayan GKPA?", en: "Who are the original GKPA congregation members among the OOT?", options: [{ text: "Glendito, Robert, Agnes", isCorrect: false }, { text: "Mangihut, Yolanda, Elvi", isCorrect: true }, { text: "Andre, Andy, Richad", isCorrect: false }, { text: "Mades, Sharoon", isCorrect: false }] },
+    { id: "Siapa saja warga OOT yang berasal dari latar belakang gereja HKBP?", en: "Which OOT members originally came from HKBP churches?", options: [{ text: "Mangihut, Yolanda, Elvi", isCorrect: false }, { text: "Glendito, Robert, Agnes, Mades", isCorrect: true }, { text: "Andy, Richad", isCorrect: false }, { text: "Andre, Sharoon", isCorrect: false }] },
+    { id: "Warga OOT yang berasal dari GKKPD adalah...", en: "The OOT member from GKKPD is...", options: [{ text: "Sharoon", isCorrect: false }, { text: "Mangihut", isCorrect: false }, { text: "Andre Padang", isCorrect: true }, { text: "Andy Brema", isCorrect: false }] },
+    { id: "Pasangan warga OOT yang berasal dari Gereja Pentakosta adalah...", en: "The pair of OOT members from Pentecostal churches are...", options: [{ text: "Elvi & Yolanda", isCorrect: false }, { text: "Glendito & Robert", isCorrect: false }, { text: "Agnes & Mades", isCorrect: false }, { text: "Andy Brema & Richad", isCorrect: true }] },
+    { id: "Satu-satunya warga OOT yang berasal dari Gereja Protestan Maluku (GPM) adalah...", en: "The only OOT member from GPM is...", options: [{ text: "Sharoon Evangelyne Sanammase", isCorrect: true }, { text: "Mades Roma Novriyanti", isCorrect: false }, { text: "Agnes Monica", isCorrect: false }, { text: "Yolanda Natalia", isCorrect: false }] },
+    { id: "Siapa warga OOT yang hobi bikin pelet dari kulit durian?", en: "Who has a hobby of making pellets from durian peels?", options: [{ text: "Mangihut Tua Harahap", isCorrect: true }, { text: "Andre Padang", isCorrect: false }, { text: "Robert Johannes", isCorrect: false }, { text: "Glendito Rayadi", isCorrect: false }] },
+    { id: "Siapa anak OOT yang posisinya saat ini ada di Depok?", en: "Which OOT member is currently located in Depok?", options: [{ text: "Richad Syahputra", isCorrect: false }, { text: "Andy Brema", isCorrect: false }, { text: "Glendito Rayadi S.", isCorrect: true }, { text: "Mangihut Tua", isCorrect: false }] },
+    { id: "Siapakah yang berkuliah di jurusan Hubungan Internasional UNILA?", en: "Who studied International Relations at UNILA?", options: [{ text: "Robert Johannes", isCorrect: false }, { text: "Andy Brema Sitompul", isCorrect: true }, { text: "Mangihut Tua", isCorrect: false }, { text: "Richad Syahputra", isCorrect: false }] },
+    { id: "Di mana posisi saat ini dari Mades Roma Novriyanti Sinaga?", en: "Where is Mades Roma currently located?", options: [{ text: "Simalungun", isCorrect: false }, { text: "Palembang", isCorrect: false }, { text: "Depok", isCorrect: false }, { text: "Medan Amplas", isCorrect: true }] },
+    { id: "Siapa warga OOT yang lahir pada bulan Desember 2002?", en: "Which OOT member was born in December 2002?", options: [{ text: "Yolanda Natalia", isCorrect: true }, { text: "Agnes Monica", isCorrect: false }, { text: "Elvi Agustina", isCorrect: false }, { text: "Sharoon Evangelyne", isCorrect: false }] },
+    { id: "Warga OOT yang hobi 'mengaduk botol' adalah...", en: "The OOT members whose hobby is 'mixing bottles' are...", options: [{ text: "Agnes & Mades", isCorrect: true }, { text: "Elvi & Yolanda", isCorrect: false }, { text: "Sharoon & Mades", isCorrect: false }, { text: "Yolanda & Agnes", isCorrect: false }] },
+    { id: "Siapakah di antara berikut yang merupakan 'Legal Drafter'?", en: "Who among the following is a 'Legal Drafter'?", options: [{ text: "Andy Brema", isCorrect: false }, { text: "Robert Johannes Hutabarat", isCorrect: true }, { text: "Richad Syahputra", isCorrect: false }, { text: "Mangihut Tua", isCorrect: false }] },
+    { id: "Ayat Malua 'Efesus 6:10' adalah milik...", en: "The confirmation verse 'Ephesians 6:10' belongs to...", options: [{ text: "Andre Padang", isCorrect: false }, { text: "Glendito Rayadi S.", isCorrect: true }, { text: "Richad Syahputra", isCorrect: false }, { text: "Andy Brema", isCorrect: false }] },
+    { id: "Warga OOT yang kuliah di jurusan Sains Atmosfer & Keplanetan adalah...", en: "The member studying Atmospheric & Planetary Sciences is...", options: [{ text: "Mades Roma", isCorrect: false }, { text: "Agnes Monica", isCorrect: false }, { text: "Sharoon Evangelyne", isCorrect: true }, { text: "Yolanda Natalia", isCorrect: false }] },
+    { id: "Siapa personil yang join OOT paling terakhir (November 2025)?", en: "Who joined OOT the latest (November 2025)?", options: [{ text: "Mangihut Tua", isCorrect: false }, { text: "Andy Brema Sitompul", isCorrect: true }, { text: "Andre Padang", isCorrect: false }, { text: "Robert Johannes", isCorrect: false }] },
+    { id: "Dari 11 personil OOT, ada berapa orang yang saat ini berposisi di luar Provinsi Lampung?", en: "Out of 11 members, how many are currently outside Lampung Province?", options: [{ text: "4 Orang", isCorrect: false }, { text: "5 Orang", isCorrect: true }, { text: "6 Orang", isCorrect: false }, { text: "7 Orang", isCorrect: false }] },
+    { id: "Selain main alat musik, siapa yang spesifik menyantumkan perannya sebagai 'Soundman'?", en: "Besides playing instruments, who specifically listed 'Soundman' as their role?", options: [{ text: "Andre Padang", isCorrect: false }, { text: "Glendito Rayadi", isCorrect: false }, { text: "Richad Syahputra Sihombing", isCorrect: true }, { text: "Andy Brema", isCorrect: false }] },
+    { id: "Siapa personil yang berkuliah di Teknik Geomatika ITERA?", en: "Who studies Geomatics Engineering at ITERA?", options: [{ text: "Mangihut Tua", isCorrect: false }, { text: "Glendito Rayadi S.", isCorrect: true }, { text: "Andre Padang", isCorrect: false }, { text: "Richad Syahputra", isCorrect: false }] },
+    { id: "Siapa di bawah ini yang jago nyanyi dengan jenis suara Baritone?", en: "Who below is skilled at singing Baritone?", options: [{ text: "Robert Johannes", isCorrect: false }, { text: "Andy Brema", isCorrect: false }, { text: "Glendito Rayadi S.", isCorrect: true }, { text: "Mangihut Tua", isCorrect: false }] },
+    { id: "Siapakah 2 personil OOT yang merupakan mahasiswa Teknik Sistem Energi ITERA?", en: "Which 2 members study Energy Systems Engineering at ITERA?", options: [{ text: "Andre & Richad", isCorrect: true }, { text: "Glendito & Mangihut", isCorrect: false }, { text: "Robert & Andy", isCorrect: false }, { text: "Yolanda & Elvi", isCorrect: false }] },
+    { id: "Siapakah yang ulang tahunnya jatuh pada tanggal 8 Agustus?", en: "Whose birthday falls exactly on August 8?", options: [{ text: "Elvi Agustina", isCorrect: false }, { text: "Mangihut Tua", isCorrect: false }, { text: "Agnes Monica Manurung", isCorrect: true }, { text: "Yolanda Natalia", isCorrect: false }] },
+    { id: "Siapa warga OOT yang tercatat paling muda (Kelahiran April 2004)?", en: "Who is the youngest OOT member (Born April 2004)?", options: [{ text: "Robert Johannes Hutabarat", isCorrect: true }, { text: "Sharoon Evangelyne", isCorrect: false }, { text: "Mades Roma", isCorrect: false }, { text: "Richad Syahputra", isCorrect: false }] },
+    { id: "Apa kepanjangan dari OOT?", en: "What does OOT stand for?", options: [{ text: "Out of Town", isCorrect: false }, { text: "Order of Time", isCorrect: false }, { text: "Orang Orang Terbaik", isCorrect: true }, { text: "Out of Topic", isCorrect: false }] },
+    { id: "Siapakah yang posisinya sekarang ada di Hotel Padang Sukarame?", en: "Who is currently located at Hotel Padang Sukarame?", options: [{ text: "Andre Padang", isCorrect: true }, { text: "Richad Syahputra", isCorrect: false }, { text: "Andy Brema", isCorrect: false }, { text: "Robert Johannes", isCorrect: false }] },
+    { id: "Selain nyanyi, siapa yang punya hobi \"Aktivis Kancah Global\"?", en: "Besides singing, who has the hobby 'Global Arena Activist'?", options: [{ text: "Mangihut Tua", isCorrect: false }, { text: "Andy Brema Sitompul", isCorrect: true }, { text: "Robert Johannes", isCorrect: false }, { text: "Glendito Rayadi", isCorrect: false }] },
+    { id: "Siapa dua orang yang punya keahlian 'Rancang Pabrik Asam Salisilat'?", en: "Which two have the skill 'Designing Salicylic Acid Plant'?", options: [{ text: "Mades & Agnes", isCorrect: false }, { text: "Elvi & Yolanda", isCorrect: true }, { text: "Sharoon & Mades", isCorrect: false }, { text: "Yolanda & Agnes", isCorrect: false }] },
+    { id: "Bulan dan tahun berapakah OOT Circle resmi terbentuk?", en: "In what month and year was the OOT Circle officially formed?", options: [{ text: "Agustus 2025", isCorrect: true }, { text: "September 2025", isCorrect: false }, { text: "Agustus 2026", isCorrect: false }, { text: "November 2025", isCorrect: false }] }
+  ];
+
+  let currentQuizSession = [];
+  let currentQIndex = 0;
+
+  function showQuiz() {
+    const qArea = document.getElementById('quiz-area');
+    // Hide trigger button, show quiz
+    document.querySelector('.quiz-trigger-container').style.display = 'none';
+    qArea.style.display = 'block';
+    
+    // Pick 5 random questions for this session
+    currentQuizSession = shuffleArray([...allTriviaQuestions]).slice(0, 5);
+    currentQIndex = 0;
+    renderQuiz();
+  }
+
+  function renderQuiz() {
+    if (currentQuizSession.length === 0) return;
+    
+    let isEn = document.body.classList.contains('lang-en');
+    let q = currentQuizSession[currentQIndex];
+    let qText = isEn ? q.en : q.id;
+    
+    document.getElementById('quiz-progress').innerText = isEn ? `Question ${currentQIndex + 1} of 5` : `Pertanyaan ${currentQIndex + 1} dari 5`;
+    document.getElementById('quiz-question').innerText = qText;
+    
+    // Shuffle options
+    let opts = shuffleArray([...q.options]);
+    let optsHtml = '';
+    opts.forEach((opt, idx) => {
+      let letter = String.fromCharCode(65 + idx); // A, B, C, D
+      optsHtml += `<button class="quiz-opt-btn" onclick="answerQuiz(this, ${opt.isCorrect})">${letter}. ${opt.text}</button>`;
+    });
+    
+    document.getElementById('quiz-options').innerHTML = optsHtml;
+    document.getElementById('next-quiz-btn').style.display = 'none';
+  }
+
+  function answerQuiz(btnElement, isCorrect) {
+    let buttons = document.querySelectorAll('.quiz-opt-btn');
+    buttons.forEach(b => {
+      b.disabled = true;
+      if(b.getAttribute('onclick').includes('true')) b.classList.add('correct');
+    });
+
+    if(!isCorrect) {
+      btnElement.classList.add('wrong');
+    } else {
+      confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 }, zIndex: 10000 });
+    }
+
+    let isEn = document.body.classList.contains('lang-en');
+    let nextBtn = document.getElementById('next-quiz-btn');
+    nextBtn.style.display = 'inline-block';
+    
+    if(currentQIndex < currentQuizSession.length - 1) {
+      nextBtn.innerText = isEn ? 'Next Question ➡️' : 'Selanjutnya ➡️';
+      nextBtn.onclick = function() {
+        currentQIndex++;
+        renderQuiz();
+      };
+    } else {
+      nextBtn.innerText = isEn ? 'Finish Quiz 🏁' : 'Selesai 🏁';
+      nextBtn.onclick = function() {
+        document.getElementById('quiz-area').style.display = 'none';
+        document.querySelector('.quiz-trigger-container').style.display = 'block';
+        alert(isEn ? "Awesome! You completed the OOT Exam." : "Mantap Lurrrr! Udah selesai Ujian OOT-nya.");
+      };
+    }
+  }
+
+  window.onload = function() {
+    renderMembers('random'); 
+  };
+</script>
+</body>
+</html>
