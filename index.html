@@ -464,6 +464,12 @@
       <button class="filter-btn en-text" onclick="renderMembers('name')">Alphabet</button>
       <button class="filter-btn en-text" onclick="renderMembers('age')">Age</button>
       <button class="filter-btn en-text" onclick="renderMembers('join')">Join Date</button>
+      
+      <!-- TOGGLE GELAR BUTTON -->
+      <button class="filter-btn" id="btn-toggle-title" onclick="toggleTitle()" style="margin-left: 5px;">
+        <span class="id-text">🎓 Tampilkan Gelar</span>
+        <span class="en-text">🎓 Show Titles</span>
+      </button>
     </div>
 
     <!-- TABEL STATISTIK USIA -->
@@ -543,40 +549,55 @@
     <p style="font-size: 14px; margin-bottom: 20px;" class="en-text">A glimpse of our epic moments. Click the Drive button below the photo for Full HD access!</p>
     
     <div class="gallery-grid">
+      <!-- Ini ya lek nanti Thumbnail menggunakan logic OnError fallback to emoji, sesuaikan  -->
       <div class="frame-box">
-        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.05);">📸</div>
-        <div class="frame-title">Mandok Hata (Sept 25)</div>
-        <a href="#" target="_blank" class="drive-btn">📁 Buka Drive</a>
+        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.05); padding: 0;">
+          <img src="memori1.jpg" style="width:100%; height:100%; object-fit:cover;" onerror="this.outerHTML='📸'">
+        </div>
+        <div class="frame-title">Foto Studio Dadakan</div>
+        <a href="https://drive.google.com/drive/folders/1QjOHdju4P_NCve8gZZCn0ej1k2mnfGAv" target="_blank" class="drive-btn">📁 Buka Drive</a>
       </div>
       <div class="frame-box">
-        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.1);">🍖</div>
+        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.1); padding: 0;">
+          <img src="memori2.jpg" style="width:100%; height:100%; object-fit:cover;" onerror="this.outerHTML='🍖'">
+        </div>
         <div class="frame-title">Manggang2 (08 Sept 25)</div>
-        <a href="#" target="_blank" class="drive-btn">📁 Buka Drive</a>
+        <a href="https://drive.google.com/drive/folders/1qeJJxP-gAPay1ezw0MWHrq3phDJauadr" target="_blank" class="drive-btn">📁 Buka Drive</a>
       </div>
       <div class="frame-box">
-        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.05);">🌙</div>
-        <div class="frame-title">Tragedi Malam</div>
-        <a href="#" target="_blank" class="drive-btn">📁 Buka Drive</a>
+        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.05); padding: 0;">
+          <img src="memori3.jpg" style="width:100%; height:100%; object-fit:cover;" onerror="this.outerHTML='🌙'">
+        </div>
+        <div class="frame-title">Tragedi Drum</div>
+        <a href="https://drive.google.com/drive/folders/1pHZtPqStVvjuKbFpqDvm2yjBkhiDZzqm" target="_blank" class="drive-btn">📁 Buka Drive</a>
       </div>
       <div class="frame-box">
-        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.1);">🎸</div>
+        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.1); padding: 0;">
+          <img src="memori4.jpg" style="width:100%; height:100%; object-fit:cover;" onerror="this.outerHTML='🎸'">
+        </div>
         <div class="frame-title">Video Jamming</div>
-        <a href="#" target="_blank" class="drive-btn">📁 Buka Drive</a>
+        <a href="https://drive.google.com/" target="_blank" class="drive-btn">📁 Buka Drive</a>
       </div>
       <div class="frame-box">
-        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.05);">🌅</div>
+        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.05); padding: 0;">
+          <img src="memori5.jpg" style="width:100%; height:100%; object-fit:cover;" onerror="this.outerHTML='🌅'">
+        </div>
         <div class="frame-title">Embung ITERA (Des 25)</div>
-        <a href="#" target="_blank" class="drive-btn">📁 Buka Drive</a>
+        <a href="https://drive.google.com/drive/folders/1n3q0jVCx_hOmFd8nQsTLydrH_3i3BzHL?usp=sharing" target="_blank" class="drive-btn">📁 Buka Drive</a>
       </div>
       <div class="frame-box">
-        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.1);">👥</div>
-        <div class="frame-title">Foto April 2026</div>
-        <a href="#" target="_blank" class="drive-btn">📁 Buka Drive</a>
+        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.1); padding: 0;">
+          <img src="memori6.jpg" style="width:100%; height:100%; object-fit:cover;" onerror="this.outerHTML='👥'">
+        </div>
+        <div class="frame-title">Foto April 2026 (Soon)</div>
+        <a href="https://drive.google.com/" target="_blank" class="drive-btn">📁 Buka Drive</a>
       </div>
       <div class="frame-box">
-        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.05);">🎇</div>
-        <div class="frame-title">Foto Juli 2026</div>
-        <a href="#" target="_blank" class="drive-btn">📁 Buka Drive</a>
+        <div class="frame-img-placeholder" style="background: rgba(255,255,255,0.05); padding: 0;">
+          <img src="memori7.jpg" style="width:100%; height:100%; object-fit:cover;" onerror="this.outerHTML='🎇'">
+        </div>
+        <div class="frame-title">Foto Juli 2026 (Soon)</div>
+        <a href="https://drive.google.com/" target="_blank" class="drive-btn">📁 Buka Drive</a>
       </div>
     </div>
   </section>
@@ -596,8 +617,8 @@
     <button class="util-btn" onclick="toggleLang()">🌐 ID/EN</button>
   </div>
   <div class="footer-text">
-    <span class="id-text">Website ini dibuat oleh Biro IT OOT, Diupdate 21 Agustus 2026 Pukul 21.45 WIB.</span>
-    <span class="en-text">This website was created by OOT IT Bureau, Updated August 21, 2026 at 21:45 WIB.</span>
+    <span class="id-text">Website ini dibuat oleh Biro IT OOT, Diupdate 22 Agustus 2026 Pukul 15.10 WIB.</span>
+    <span class="en-text">This website was created by OOT IT Bureau, Updated August 22, 2026 at 15:10 UTC+7.</span>
   </div>
 </div>
 
@@ -616,19 +637,19 @@
     bgAnim.appendChild(circle);
   }
 
-  // Member Data
+  // Member Data ditambah prop "photo"
   const rawMembers = [
-    { id: 1, name: "Andre Padang, S.T.", birth: "2002-03", join: "2025-09", campus: "ITERA - Teknik Sistem Energi", role: "Bass, Gitar, Drum, Nyanyi", hobby: "Main Musik, Pendingin Panel Surya", loc: "Hotel Padang Sukarame, Bandar Lampung", ig: "andreepadangg", icon: "👦🏻", ayat: "To Be Confirmed" },
-    { id: 2, name: "Agnes Monica Manurung, S.Si.", birth: "2002-08", join: "2025-08", campus: "ITERA - Kimia", role: "Nyanyi, Gitar, Piano", hobby: "Aduk botol, Pelihara mencit", loc: "Bah Gunung, Simalungun, Sumut", ig: "monicagnezz", icon: "👩🏻", ayat: "To Be Confirmed" },
-    { id: 3, name: "Mangihut Tua Harahap, S.T.", birth: "2002-08", join: "2025-09", campus: "UNILA - Teknik Pertanian", role: "Nyanyi, Gitar, Bass", hobby: "Buat pelet dari kulit durian", loc: "Palembang, Sumatera Selatan", ig: "mangihut_tua", icon: "👦🏽", ayat: "To Be Confirmed" },
-    { id: 4, name: "Glendito Rayadi S., S.T.", birth: "2003-04", join: "2025-08", campus: "ITERA - Teknik Geomatika", role: "Nyanyi (Baritone), Piano, Gitar, Bass", hobby: "Web/App Dev, SIG, Menulis", loc: "Margonda, Depok, Jawa Barat", ig: "glendito_smg25", icon: "👦🏻", ayat: "Efesus 6:10" },
-    { id: 5, name: "Elvi Agustina Sianturi, S.T.(Soon To Be)", birth: "2002-08", join: "2025-08", campus: "ITERA - Teknik Kimia", role: "Nyanyi", hobby: "Rancang Pabrik Asam Salisilat, Memasak", loc: "Pelosok Way Halim, Bandar Lampung", ig: "elviagustinasianturi", icon: "👩🏽", ayat: "To Be Confirmed" },
-    { id: 6, name: "Yolanda Natalia, S.T. (Soon To Be)", birth: "2002-12", join: "2025-08", campus: "ITERA - Teknik Kimia", role: "Nyanyi", hobby: "Rancang Pabrik Asam Salisilat, Memasak", loc: "Pelosok Way Halim, Bandar Lampung", ig: "yolndnataliaa", icon: "👩🏻", ayat: "To Be Confirmed" },
-    { id: 7, name: "Richad Syahputra Sihombing, S.T.", birth: "2003-06", join: "2025-08", campus: "ITERA - Teknik Sistem Energi", role: "Nyanyi, Piano, Gitar, Bass, Drum", hobby: "Soundman", loc: "Kampung Baru, Bandar Lampung", ig: "richad.sihombing", icon: "👦🏻", ayat: "To Be Confirmed" },
-    { id: 8, name: "Robert Johannes Hutabarat, S.H.", birth: "2004-04", join: "2025-08", campus: "UNILA - Ilmu Hukum", role: "Nyanyi, Gitar, Bass, Drum", hobby: "Legal Drafter", loc: "Pelosok Sutoyo, Jakarta Timur, DKJ", ig: "roberthutabaratt", icon: "👦🏽", ayat: "To Be Confirmed" },
-    { id: 9, name: "Andy Brema Sitompul, S.Hub.Int.", birth: "2002-06", join: "2025-11", campus: "UNILA - Hubungan Internasional", role: "Nyanyi, Piano, Gitar, Bass", hobby: "Aktivis Kancah Global", loc: "Bataranila, Bandar Lampung", ig: "andy_brema04", icon: "👦🏻", ayat: "To Be Confirmed" },
-    { id: 10, name: "Sharoon Evangelyne Sanammase, S.Si.(Soon To Be)", birth: "2004-03", join: "2025-08", campus: "ITERA - Sains Atmosfer & Keplanetan", role: "Nyanyi", hobby: "Mengamati Planet", loc: "Belwis, Way Huwi, Lampung Selatan", ig: "shesan02_", icon: "👩🏽", ayat: "To Be Confirmed" },
-    { id: 11, name: "Mades Roma Novriyanti Sinaga, S.Si.", birth: "2003-11", join: "2025-08", campus: "ITERA - Kimia", role: "Nyanyi, Mengajar", hobby: "Mengaduk Botol, Memasak", loc: "Medan Amplas, Kota Medan, Sumut", ig: "mades.sinaga", icon: "👩🏻", ayat: "To Be Confirmed" }
+    { id: 1, name: "Andre Padang, S.T.", photo: "andre.jpg", birth: "2002-03", join: "2025-09", campus: "ITERA - Teknik Sistem Energi", role: "Bass, Gitar, Drum, Nyanyi", hobby: "Main Musik, Pendingin Panel Surya", loc: "Hotel Padang Sukarame, Bandar Lampung", ig: "andreepadangg", icon: "👦🏻", ayat: "To Be Confirmed" },
+    { id: 2, name: "Agnes Monica Manurung, S.Si.", photo: "agnes.jpg", birth: "2002-08", join: "2025-08", campus: "ITERA - Kimia", role: "Nyanyi, Gitar, Piano", hobby: "Aduk botol, Pelihara mencit", loc: "Bah Gunung, Simalungun, Sumut", ig: "monicagnezz", icon: "👩🏻", ayat: "To Be Confirmed" },
+    { id: 3, name: "Mangihut Tua Harahap, S.T.", photo: "mangihut.jpg", birth: "2002-08", join: "2025-09", campus: "UNILA - Teknik Pertanian", role: "Nyanyi, Gitar, Bass", hobby: "Buat pelet dari kulit durian", loc: "Palembang, Sumatera Selatan", ig: "mangihut_tua", icon: "👦🏽", ayat: "To Be Confirmed" },
+    { id: 4, name: "Glendito Rayadi S., S.T.", photo: "glendito.jpg", birth: "2003-04", join: "2025-08", campus: "ITERA - Teknik Geomatika", role: "Nyanyi (Baritone), Piano, Gitar, Bass", hobby: "Web/App Dev, SIG, Menulis", loc: "Margonda, Depok, Jawa Barat", ig: "glendito_smg25", icon: "👦🏻", ayat: "Efesus 6:10" },
+    { id: 5, name: "Elvi Agustina Sianturi, S.T.(Soon To Be)", photo: "elvi.jpg", birth: "2002-08", join: "2025-08", campus: "ITERA - Teknik Kimia", role: "Nyanyi", hobby: "Rancang Pabrik Asam Salisilat, Memasak", loc: "Pelosok Way Halim, Bandar Lampung", ig: "elviagustinasianturi", icon: "👩🏽", ayat: "To Be Confirmed" },
+    { id: 6, name: "Yolanda Natalia, S.T. (Soon To Be)", photo: "yolanda.jpg", birth: "2002-12", join: "2025-08", campus: "ITERA - Teknik Kimia", role: "Nyanyi", hobby: "Rancang Pabrik Asam Salisilat, Memasak", loc: "Pelosok Way Halim, Bandar Lampung", ig: "yolndnataliaa", icon: "👩🏻", ayat: "To Be Confirmed" },
+    { id: 7, name: "Richad Syahputra Sihombing, S.T.", photo: "richad.jpg", birth: "2003-06", join: "2025-08", campus: "ITERA - Teknik Sistem Energi", role: "Nyanyi, Piano, Gitar, Bass, Drum", hobby: "Soundman", loc: "Kampung Baru, Bandar Lampung", ig: "richad.sihombing", icon: "👦🏻", ayat: "To Be Confirmed" },
+    { id: 8, name: "Robert Johannes Hutabarat, S.H.", photo: "robert.jpg", birth: "2004-04", join: "2025-08", campus: "UNILA - Ilmu Hukum", role: "Nyanyi, Gitar, Bass, Drum", hobby: "Legal Drafter", loc: "Pelosok Sutoyo, Jakarta Timur, DKJ", ig: "roberthutabaratt", icon: "👦🏽", ayat: "To Be Confirmed" },
+    { id: 9, name: "Andy Brema Sitompul, S.Hub.Int.", photo: "andy.jpg", birth: "2002-06", join: "2025-11", campus: "UNILA - Hubungan Internasional", role: "Nyanyi, Piano, Gitar, Bass", hobby: "Aktivis Kancah Global", loc: "Bataranila, Bandar Lampung", ig: "andy_brema04", icon: "👦🏻", ayat: "To Be Confirmed" },
+    { id: 10, name: "Sharoon Evangelyne Sanammase, S.Si.(Soon To Be)", photo: "sharoon.jpg", birth: "2004-03", join: "2025-08", campus: "ITERA - Sains Atmosfer & Keplanetan", role: "Nyanyi", hobby: "Mengamati Planet", loc: "Belwis, Way Huwi, Lampung Selatan", ig: "shesan02_", icon: "👩🏽", ayat: "To Be Confirmed" },
+    { id: 11, name: "Mades Roma Novriyanti Sinaga, S.Si.", photo: "mades.jpg", birth: "2003-11", join: "2025-08", campus: "ITERA - Kimia", role: "Nyanyi, Mengajar", hobby: "Mengaduk Botol, Memasak", loc: "Medan Amplas, Kota Medan, Sumut", ig: "mades.sinaga", icon: "👩🏻", ayat: "To Be Confirmed" }
   ];
 
   function parseDate(dateStr) {
@@ -648,8 +669,26 @@
     return array;
   }
 
+  let showTitle = false;
+  let currentSortType = 'random';
+
+  // Toggle Gelar Function
+  function toggleTitle() {
+    showTitle = !showTitle;
+    const btn = document.getElementById('btn-toggle-title');
+    if (showTitle) {
+      btn.classList.add('active');
+      btn.innerHTML = '<span class="id-text">🎓 Sembunyikan Gelar</span><span class="en-text">🎓 Hide Titles</span>';
+    } else {
+      btn.classList.remove('active');
+      btn.innerHTML = '<span class="id-text">🎓 Tampilkan Gelar</span><span class="en-text">🎓 Show Titles</span>';
+    }
+    renderMembers(currentSortType);
+  }
+
   function renderMembers(sortType) {
-    const btns = document.querySelectorAll('.filter-btn');
+    currentSortType = sortType;
+    const btns = document.querySelectorAll('.filter-btn:not(#btn-toggle-title)');
     btns.forEach(b => b.classList.remove('active'));
     document.querySelectorAll(`.filter-btn[onclick="renderMembers('${sortType}')"]`).forEach(b => b.classList.add('active'));
 
@@ -666,14 +705,19 @@
       let isEn = document.body.classList.contains('lang-en');
       let joinFmt = m.join.split('-').reverse().join('/');
       let animDelay = (index * 0.1) + 's';
+
+      // Logic untuk menyembunyikan gelar jika toggle mati (split melalui tanda koma)
+      let displayName = showTitle ? m.name : m.name.split(',')[0];
       
       let html = `
         <div class="member-card glass-panel stagger-anim" style="animation-delay: ${animDelay};">
           <div class="photo-container" onclick="this.querySelector('.photo-ring').style.borderStyle='solid'">
             <div class="photo-ring"></div>
-            <div class="member-photo">${m.icon}</div>
+            <div class="member-photo" style="overflow:hidden;">
+              <img src="${m.photo}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.outerHTML='${m.icon}'">
+            </div>
           </div>
-          <div class="member-name">${m.name}</div>
+          <div class="member-name">${displayName}</div>
           <div class="member-detail"><b>🎓 ${isEn ? 'Campus' : 'Kampus'}:</b> ${m.campus}</div>
           <div class="member-detail"><b>📅 ${isEn ? 'Born' : 'Lahir'}:</b> ${m.birth}</div>
           <div class="member-detail"><b>🤝 Join:</b> ${joinFmt}</div>
@@ -732,7 +776,7 @@
     let isId = document.body.classList.contains('lang-id');
     document.body.classList.remove(isId ? 'lang-id' : 'lang-en');
     document.body.classList.add(isId ? 'lang-en' : 'lang-id');
-    renderMembers('random');
+    renderMembers(currentSortType);
     if(document.getElementById('quiz-area').style.display === 'block') { renderQuiz(); }
   }
 
@@ -764,7 +808,7 @@
     }, 200);
   }
 
-  // --- 30 QUIZ TRIVIA BANK ---
+  // --- 30 QUIZ TRIVIA/SHILLY/KONYOL/ABSURD/RECEH  ---
   const allTriviaQuestions = [
     { id: "Siapa di antara personil berikut yang kuliahnya BUKAN di kampus ITERA?", en: "Who among these members did NOT study at ITERA?", options: [{ text: "Agnes Monica", isCorrect: false }, { text: "Glendito Rayadi", isCorrect: false }, { text: "Mangihut Tua Harahap", isCorrect: true }, { text: "Mades Roma", isCorrect: false }] },
     { id: "Di bawah ini warga OOT yang sering masak bebong (bukan kaleng-kaleng) adalah...", en: "The OOT members known for cooking the best pork dishes are...", options: [{ text: "Andre & Glendito", isCorrect: false }, { text: "Richad & Robert", isCorrect: false }, { text: "Yolanda & Elvi", isCorrect: true }, { text: "Mangihut & Andy", isCorrect: false }] },
